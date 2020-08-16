@@ -4,6 +4,10 @@
 #define CHIP8_RAM_SIZE 4095
 #define CHIP8_FONT_BYTES 80
 #define CHIP8_ROM_START 512 /* This is where we place the ROM initally in memory, it should be 512 or 1536.) */
+#define CHIP8_CYCLE_SPEED 700 /* This is the number of instructions per second */
+
+#define CHIP8_DISPLAY_HEIGHT 32
+#define CHIP8_DISPLAY_WIDTH 64
 
 
 const uint8_t font[CHIP8_FONT_BYTES] = {0xF0, 0x90, 0x90, 0x90, /* Bytes for 0 */
