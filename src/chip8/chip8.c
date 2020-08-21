@@ -134,7 +134,7 @@ Decode_D(void){
 
 _Bool
 Chip8_OpExec(void){
-    switch(16 * (mem[pc] / 16)){
+    switch((mem[pc] / 16)){
         case 0:
             Decode_0();
             pc+=2;
