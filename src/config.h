@@ -10,6 +10,7 @@
 #define CHIP8_DISPLAY_WIDTH 64
 
 
+#ifdef chip8
 const uint8_t font[CHIP8_FONT_BYTES] = {0xF0, 0x90, 0x90, 0x90, /* Bytes for 0 */
                                         0xF0, 0x20, 0x60, 0x20, /* Bytes for 1 */
                                         0x20, 0x70, 0xF0, 0x10,
@@ -29,8 +30,9 @@ const uint8_t font[CHIP8_FONT_BYTES] = {0xF0, 0x90, 0x90, 0x90, /* Bytes for 0 *
                                         0xF0, 0xE0, 0x90, 0x90,
                                         0x90, 0xE0, 0xF0, 0x80,
                                         0xF0, 0x80, 0xF0, 0xF0,
-                                        0x80, 0xF0, 0x80, 0x80}/* Bytes for F */
+                                        0x80, 0xF0, 0x80, 0x80}; /* Bytes for F */
 
 
+#endif
 
 #endif
