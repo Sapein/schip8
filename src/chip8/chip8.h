@@ -8,5 +8,11 @@ _Bool
 Chip8_Shutdown(void);
 
 _Bool
-Chip8_LoadROM(uint8_t *rom, size_t rom_size);
+Chip8_Cycle(void);
+
+void
+Chip8_LoadROM(uint8_t rom[], size_t rom_size);
+
+extern _Bool display[CHIP8_DISPLAY_HEIGHT][CHIP8_DISPLAY_WIDTH];
+extern _Bool disp_chng;
 #endif
