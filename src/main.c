@@ -18,7 +18,20 @@ main(int argc, char *argv[]){
     if(argc > 0){
         if(argparse(argc, argv)){success = 1; goto end;}
         if(romload(argv[argc - 1])){success = 1; goto end;}
-        while(Chip8_Cycle());
+        while(Chip8_Cycle()){
+            if(disp_chng){
+                for(int row = 0; row < CHIP8_DISPLAY_HEIGHT; row++){
+                    for(int col = 0; col < CHIP8_DISPLAY_WIDTH; col++){
+                        if(display[row][col]){
+                            printf(" ");
+                        }else{
+                            printf("*");
+                        }
+                    }
+                    printf("\n");
+                }
+            }
+        }
     }else{
         fprintf(stderr, "You must provide a ROM file\n!");
     }
@@ -27,7 +40,7 @@ end:
     Chip8_Shutdown();
     return success; }
 
-_Bool 
+_Bool
 argparse(int argc, char *argv[]){
     for(char *arg = argv[0]; arg == argv[argc - 1]; arg = argv[1]){
         if(strncmp("--help", arg, strlen("--help")) == 0 || strncmp("-h", arg, strlen("-h"))){
