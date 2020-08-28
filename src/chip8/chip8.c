@@ -6,6 +6,16 @@
 #define chip8
 #include "../config.h"
 
+#define BIT_1(byte) ((((byte / 16) / 4) / 2))
+#define BIT_2(byte) ((((byte / 16) / 4) / 2)) - (2 * ((((byte / 16) / 4) / 2)))
+#define BIT_3(byte) (((byte / 16) - (4 * ((byte / 16) / 4))) / 2)
+#define BIT_4(byte) (((byte / 16) - (4 * ((byte / 16) / 4))) - (2 * (((byte / 16) - (4 * ((byte / 16) / 4))) / 2)))
+#define BIT_5(byte) (((byte - (16 * (byte / 16))) / 4) / 2)
+#define BIT_6(byte) (((byte - (16 * (byte / 16))) / 4) - (2 * (((byte - (16 * (byte / 16))) / 4) / 2)))
+#define BIT_7(byte) (((byte - (16 * (byte / 16))) - (4 * ((byte - (16 * (byte / 16))) / 4))) / 2)
+#define BIT_8(byte) (((byte - (16 * (byte / 16))) - (4 * ((byte - (16 * (byte / 16))) / 4))) - (2 * ((((byte - (16 * (byte / 16))) - (4 * ((byte - (16 * (byte / 16))) / 4))) / 2))))
+
+
 _Bool display[CHIP8_DISPLAY_HEIGHT][CHIP8_DISPLAY_WIDTH] = {false};
 _Bool disp_chng = false;
 
@@ -97,13 +107,13 @@ Decode_6(void){
 }
 
 inline static void
-Decode_A(void){
-    regI = ((mem[pc - 2] - 0xA0) * 256) + mem[pc-1]; /* regI += ((mem[pc-2] & 0x0F) << 8) | b */
+Decode_7(void){
+    reg[mem[pc-2] - 0x70] += mem[pc-1];
 }
 
 inline static void
-Decode_7(void){
-    reg[mem[pc-2] - 0x70] += mem[pc-1];
+Decode_A(void){
+    regI = ((mem[pc - 2] - 0xA0) * 256) + mem[pc-1]; /* regI += ((mem[pc-2] & 0x0F) << 8) | b */
 }
 
 inline static void
@@ -115,39 +125,54 @@ Decode_D(void){
     uint8_t y = reg[mem[pc - 1] / 16]; /* reg[mem[pc-1] >> 4] */
     uint8_t sprite_height = mem[pc-1] - (16 * (mem[pc-1] / 16)); /* mem[pc - 1] & 0xF0 */
     uint8_t row = 0;
-    uint8_t byte = 0;
     uint8_t bit = 0;
 
     reg[15] = 0;
     for(row = 0; row < sprite_height; row++, regI++){
-        byte = mem[regI];
-        bit = ((((byte / 16) / 4) / 2));
+        bit = BIT_1(mem[regI]);
         updatedisp(y + row, x+0, bit);
 
-        bit = ((((byte / 16) / 4) / 2)) - (2 * ((((byte / 16) / 4) / 2)));
+        bit = BIT_2(mem[regI]);
         updatedisp(y + row, x+1, bit);
 
-        bit = ((byte / 16) - (4 * ((byte / 16) / 4))) / 2;
+        bit = BIT_3(mem[regI]);
         updatedisp(y + row, x+2, bit);
 
-        bit = ((byte / 16) - (4 * ((byte / 16) / 4))) - (2 * (((byte / 16) - (4 * ((byte / 16) / 4))) / 2));
+        bit = BIT_4(mem[regI]);
         updatedisp(y + row, x+3, bit);
 
-        bit = ((byte - (16 * (byte / 16))) / 4) / 2;
+        bit = BIT_5(mem[regI]);
         updatedisp(y + row, x+4, bit);
 
-        bit = ((byte - (16 * (byte / 16))) / 4) - (2 * (((byte - (16 * (byte / 16))) / 4) / 2));
+        bit = BIT_6(mem[regI]);
         updatedisp(y + row, x+5, bit);
 
-        bit = ((byte - (16 * (byte / 16))) - (4 * ((byte - (16 * (byte / 16))) / 4))) / 2;
+        bit = BIT_7(mem[regI]);
         updatedisp(y + row, x+6, bit);
 
-        bit = ((byte - (16 * (byte / 16))) - (4 * ((byte - (16 * (byte / 16))) / 4))) - (2 * ((((byte - (16 * (byte / 16))) - (4 * ((byte - (16 * (byte / 16))) / 4))) / 2)));
+        bit = BIT_8(mem[regI]);
         updatedisp(y + row, x+7, bit);
     }
     regI -= sprite_height;
     disp_chng = true;
 }
+
+
+inline static void
+Decode_Unimplemented(void){
+    fprintf(stderr, "Opcode %x%x not implemented!\n", mem[pc - 2], mem[pc - 1]);
+}
+
+#define Decode_2 Decode_Unimplemented
+#define Decode_3 Decode_Unimplemented
+#define Decode_4 Decode_Unimplemented
+#define Decode_5 Decode_Unimplemented
+#define Decode_8 Decode_Unimplemented
+#define Decode_9 Decode_Unimplemented
+#define Decode_B Decode_Unimplemented
+#define Decode_C Decode_Unimplemented
+#define Decode_E Decode_Unimplemented
+#define Decode_F Decode_Unimplemented
 
 _Bool
 Chip8_OpExec(void){
@@ -158,17 +183,47 @@ Chip8_OpExec(void){
         case 1:
             Decode_1();
             break;
+        case 2:
+            Decode_2();
+            break;
+        case 3:
+            Decode_3();
+            break;
+        case 4:
+            Decode_4();
+            break;
+        case 5:
+            Decode_5();
+            break;
         case 6:
             Decode_6();
             break;
         case 7:
             Decode_7();
             break;
-        case 0xa:
+        case 8:
+            Decode_8();
+            break;
+        case 9:
+            Decode_9();
+            break;
+        case 0xA:
             Decode_A();
             break;
-        case 0xd:
+        case 0xB:
+            Decode_B();
+            break;
+        case 0xC:
+            Decode_C();
+            break;
+        case 0xD:
             Decode_D();
+            break;
+        case 0xE:
+            Decode_E();
+            break;
+        case 0xF:
+            Decode_F();
             break;
         default:
             fprintf(stderr, "Unknown OpCode: 0x%x%x\n", (unsigned int)mem[pc - 2], (unsigned int)mem[pc - 1]);
