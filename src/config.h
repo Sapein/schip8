@@ -9,6 +9,9 @@
 #define CHIP8_DISPLAY_HEIGHT 32
 #define CHIP8_DISPLAY_WIDTH 64
 
+#define CHIP8_STACK_START 86
+#define CHIP8_STACK_SIZE 32
+
 
 #ifdef chip8
 const uint8_t font[CHIP8_FONT_BYTES] = {0xF0, 0x90, 0x90, 0x90, /* Bytes for 0 */
