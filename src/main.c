@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "config.h"
+#include "io/io.h"
 #include "chip8/chip8.h"
 
 _Bool
@@ -14,23 +17,36 @@ romload(char *path);
 int
 main(int argc, char *argv[]){
     int success = 0;
+    int instruct = 0;
+    time_t start = 0;
+    time_t end = 0;
+    if(IO_Init() != true){
+        goto end;
+    }
     Chip8_Init();
     if(argc > 0){
         if(argparse(argc, argv)){success = 1; goto end;}
         if(romload(argv[argc - 1])){success = 1; goto end;}
-        while(Chip8_Cycle()){
+        for(instruct = 0, start = time(NULL); Chip8_Cycle() == true; instruct++){
+
             if(disp_chng){
-                for(int row = 0; row < CHIP8_DISPLAY_HEIGHT; row++){
-                    for(int col = 0; col < CHIP8_DISPLAY_WIDTH; col++){
-                        if(display[row][col]){
-                            printf(" ");
-                        }else{
-                            printf("*");
-                        }
-                    }
-                    printf("\n");
-                }
+                IO_UpdateScreen(display);
             }
+
+            key = IO_GetKeyPress();
+            if(key <= 0xF){
+                key_pressed = true;
+            }
+
+            end = time(NULL);
+            if(instruct >= CHIP8_CYCLE_SPEED){
+                if((end - start) > 0){
+                    sleep(1);
+                }
+                instruct = 0;
+            }
+
+            start = time(NULL);
         }
     }else{
         fprintf(stderr, "You must provide a ROM file\n!");
@@ -38,7 +54,9 @@ main(int argc, char *argv[]){
 
 end:
     Chip8_Shutdown();
-    return success; }
+    IO_Shutdown();
+    return success;
+}
 
 _Bool
 argparse(int argc, char *argv[]){
